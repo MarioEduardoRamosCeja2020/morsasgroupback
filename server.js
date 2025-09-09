@@ -28,7 +28,7 @@ db.connect(err => {
 });
 
 
-app.get('/api/item', (req, res) => {
+app.get('/api/item', (res) => {
     db.query('SELECT * FROM item', (err, results) => {
         if (err) {
             console.error('Error al obtener las refacciones:', err);
@@ -41,25 +41,24 @@ app.get('/api/item', (req, res) => {
 
 
 app.post('/api/itemBySystem', (req, res) => {
-    console.log("si entra");
-    // const system = req.query.system;
-    console.log("voy" + req);
+    const { system } = req.body; // Obtener el 'system' desde el cuerpo de la solicitud
+
+    // Verificar si el parámetro 'system' está presente
     if (!system) {
         return res.status(400).json({ error: 'El parámetro "system" es necesario.' });
     }
 
-    // console.log("Buscando productos para el sistema:", system.toString());
-
-
-    // db.query("SELECT * FROM item WHERE system = '+system+'", (err, results) => {
-    //     if (err) {
-    //         console.error('Error al obtener las refacciones:', err);
-    //         res.status(500).json({ error: 'Error en el servidor' });
-    //         return;
-    //     }
-    //     res.json(results);
-    // });
+    // Realizar la consulta SQL usando parámetros para evitar inyección SQL
+    db.query("SELECT * FROM item WHERE system = ?", [system], (err, results) => {
+        if (err) {
+            console.error('Error al obtener las refacciones:', err);
+            res.status(500).json({ error: 'Error en el servidor' });
+            return;
+        }
+        res.json(results); // Enviar los resultados como respuesta
+    });
 });
+
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
